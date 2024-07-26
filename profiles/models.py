@@ -22,7 +22,7 @@ def phone(number):
 class Profile(models.Model):
     owner = models.OneToOneField(User, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=20)
-    age = models.IntegerField(validators=[age])
+    age = models.IntegerField(validators=[age], null=False)
     phone_number = models.CharField(max_length=11, validators=[phone])
     email = models.EmailField(validators=[EmailValidator(message='Please enter a valid email address.')])
     gender = models.CharField(
