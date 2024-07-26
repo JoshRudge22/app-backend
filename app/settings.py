@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 from pathlib import Path
 import os
+import dj_database_url
 if os.path.exists('env.py'):
     import env
 
@@ -34,9 +35,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-2=cfz8tl%-qj9hr%io%2d-13*du$ubtj*d$)ohx1d9z=&m#g4+'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = 'DEV' in os.environ
 
-ALLOWED_HOSTS = ['8000-joshrudge22-appbackend-a2glp9uocot.ws-eu115.gitpod.io']
+ALLOWED_HOSTS = ['8000-joshrudge22-appbackend-a2glp9uocot.ws-eu115.gitpod.io',
+'joshapp-backend-5103bff8d5ca.herokuapp.com'
+]
 
 
 # Application definition
@@ -58,6 +61,7 @@ INSTALLED_APPS = [
     'allauth.account', 
     'allauth.socialaccount', 
     'dj_rest_auth.registration',
+    'corsheaders',
     'profiles',
 ]
 
@@ -80,6 +84,7 @@ JWT_AUTH_REFRESH_COOKIE = 'my-refresh-token'
 REST_AUTH_SERIALIZERS = {'USER_DETAILS_SERIALIZER': 'app.serializers.CurrentUserSerializer'}
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -88,6 +93,20 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+if 'CLIENT_ORIGIN' in os.environ:
+    CORS_ALLOWED_ORIGINS = [
+        os.environ.get('CLIENT_ORIGIN')
+    ]
+else:
+    CORS_ALLOWED_ORIGIN_REGEXES = [
+        r"^https://.*\.gitpod\.io$",
+    ]
+
+CORS_ALLOW_CREDENTIALS = True
+JWT_AUTH_SAMESITE = 'None'
+
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 ROOT_URLCONF = 'app.urls'
 
@@ -114,11 +133,14 @@ WSGI_APPLICATION = 'app.wsgi.application'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
+    'default': ({
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    } if 'DEV' in os.environ else dj_database_url.parse(
+        os.environ.get('DATABASE_URL')
+    ))
 }
+
 
 
 # Password validation
